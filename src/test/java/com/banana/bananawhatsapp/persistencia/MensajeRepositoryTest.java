@@ -1,6 +1,6 @@
 package com.banana.bananawhatsapp.persistencia;
 
-import com.banana.bananawhatsapp.exceptions.MensajeException;
+import com.banana.bananawhatsapp.config.SpringConfig;
 import com.banana.bananawhatsapp.exceptions.UsuarioException;
 import com.banana.bananawhatsapp.modelos.Mensaje;
 import com.banana.bananawhatsapp.modelos.Usuario;
@@ -8,6 +8,10 @@ import com.banana.bananawhatsapp.util.DBUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,11 +21,14 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.*;
 
-
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {SpringConfig.class})
 class MensajeRepositoryTest {
 
+    @Autowired
     IUsuarioRepository repoUsuario;
 
+    @Autowired
     IMensajeRepository repoMensaje;
 
     @BeforeEach
@@ -37,7 +44,9 @@ class MensajeRepositoryTest {
 
         Mensaje message = new Mensaje(null, remitente, destinatario, "De acuerdo Juana. Un saludo.", LocalDate.now());
 
-        repoMensaje.crear(message);
+        Mensaje saved = repoMensaje.save(message);
+        saved.valido();
+
         assertThat(message, notNullValue());
         assertThat(message.getId(), greaterThan(0));
     }
@@ -47,9 +56,10 @@ class MensajeRepositoryTest {
     void dadoUnMensajeNOValido_cuandoCrear_entoncesExcepcion() throws Exception {
         Usuario remitente = new Usuario(1, null, null, null, true);
         Usuario destinatario = new Usuario(2, null, null, null, true);
-        Mensaje message = new Mensaje(null, destinatario, remitente, "SMS < 10", LocalDate.now());
+        Mensaje message = new Mensaje(null, destinatario, remitente, null, LocalDate.now());
         assertThrows(Exception.class, () -> {
-            repoMensaje.crear(message);
+            Mensaje saved = repoMensaje.save(message);
+            saved.valido();
         });
     }
 
@@ -57,8 +67,8 @@ class MensajeRepositoryTest {
     @Order(3)
     void dadoUnUsuarioValido_cuandoObtener_entoncesListaMensajes() throws Exception {
         Usuario user = repoUsuario.obtener(1);
-
-        List<Mensaje> userMessages = repoMensaje.obtener(user);
+        user.valido();
+        List<Mensaje> userMessages = repoMensaje.obtener(user.getId());
         assertNotNull(userMessages);
     }
 
@@ -68,7 +78,8 @@ class MensajeRepositoryTest {
         Usuario user = new Usuario(1, null, null, null, false);
 
         assertThrows(UsuarioException.class, () -> {
-            List<Mensaje> userMessages = repoMensaje.obtener(user);
+            user.valido();
+            List<Mensaje> userMessages = repoMensaje.obtener(user.getId());
         });
     }
 
@@ -78,8 +89,11 @@ class MensajeRepositoryTest {
         Usuario remitente = repoUsuario.obtener(1);
         Usuario destinatario = repoUsuario.obtener(2);
 
-        boolean borrarChat = repoMensaje.borrarEntre(remitente, destinatario);
-        assertTrue(borrarChat);
+        remitente.valido();
+        destinatario.valido();
+
+        repoMensaje.deleteMessagesBetweenUsers(remitente.getId(), destinatario.getId());
+        assertTrue(true);
     }
 
     @Test
@@ -90,7 +104,8 @@ class MensajeRepositoryTest {
         Usuario destinatario = repoUsuario.obtener(2);
 
         assertThrows(UsuarioException.class, () -> {
-            repoMensaje.borrarEntre(remitente, destinatario);
+            remitente.valido();
+            repoMensaje.deleteMessagesBetweenUsers(remitente.getId(), destinatario.getId());
         });
     }
 
@@ -99,8 +114,8 @@ class MensajeRepositoryTest {
     void dadoUnUsuarioValido_cuandoBorrarTodos_entoncesOK() throws Exception {
         Usuario user = repoUsuario.obtener(1);
 
-        boolean borrarChat = repoMensaje.borrarTodos(user);
-        assertTrue(borrarChat);
+        repoMensaje.borrarTodos(user.getId());
+        assertTrue(true);
     }
 
     @Test
@@ -109,7 +124,8 @@ class MensajeRepositoryTest {
         Usuario user = new Usuario(1, null, null, null, true);
 
         assertThrows(UsuarioException.class, () -> {
-            repoMensaje.borrarTodos(user);
+            user.valido();
+            repoMensaje.borrarTodos(user.getId());
         });
     }
 

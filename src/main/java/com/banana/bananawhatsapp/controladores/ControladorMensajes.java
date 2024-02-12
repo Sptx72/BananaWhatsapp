@@ -3,18 +3,26 @@ package com.banana.bananawhatsapp.controladores;
 import com.banana.bananawhatsapp.modelos.Mensaje;
 import com.banana.bananawhatsapp.modelos.Usuario;
 import com.banana.bananawhatsapp.servicios.IServicioMensajeria;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import java.util.List;
 
+@Controller
 public class ControladorMensajes {
+
+    @Autowired
     private IServicioMensajeria servicioMensajeria;
 
-    public boolean enviarMensaje(Integer remitente, Integer destinatario, String texto) {
+    public boolean enviarMensaje(Integer remitente, Integer destinatario, String texto) throws Exception {
         try {
             Usuario uRemitente = new Usuario();
             uRemitente.setId(remitente);
             Usuario uDestinatario = new Usuario();
             uDestinatario.setId(destinatario);
+
+            uRemitente.valido();
+            uDestinatario.valido();
 
             Mensaje mensaje = servicioMensajeria.enviarMensaje(uRemitente, uDestinatario, texto);
             System.out.println("Mensaje enviado: " + mensaje);
@@ -26,7 +34,7 @@ public class ControladorMensajes {
 
     }
 
-    public boolean mostrarChat(Integer remitente, Integer destinatario) {
+    public boolean mostrarChat(Integer remitente, Integer destinatario) throws Exception {
         try {
             Usuario uRemitente = new Usuario();
             uRemitente.setId(remitente);

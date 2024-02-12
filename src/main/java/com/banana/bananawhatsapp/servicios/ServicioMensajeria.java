@@ -7,7 +7,10 @@ import com.banana.bananawhatsapp.modelos.Usuario;
 import com.banana.bananawhatsapp.persistencia.IMensajeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 @Service
 public class ServicioMensajeria implements IServicioMensajeria{
@@ -15,18 +18,36 @@ public class ServicioMensajeria implements IServicioMensajeria{
     IMensajeRepository mensajeRepo;
 
     @Override
-    public Mensaje enviarMensaje(Usuario remitente, Usuario destinatario, String texto) throws UsuarioException, MensajeException {
+    @Transactional
+    public Mensaje enviarMensaje(Usuario remitente, Usuario destinatario, String texto) throws UsuarioException, MensajeException, SQLException {
+        remitente.valido();
+        destinatario.valido();
+
         Mensaje mensaje = new Mensaje();
-        return null;
+        mensaje.setRemitente(remitente);
+        mensaje.setDestinatario(destinatario);
+        mensaje.setCuerpo(texto);
+        mensaje.setFecha(LocalDate.now());
+
+        mensaje.valido();
+
+        return mensajeRepo.save(mensaje);
     }
 
     @Override
-    public List<Mensaje> mostrarChatConUsuario(Usuario remitente, Usuario destinatario) throws UsuarioException, MensajeException {
-        return null;
+    public List<Mensaje> mostrarChatConUsuario(Usuario remitente, Usuario destinatario) throws UsuarioException, MensajeException, SQLException {
+        remitente.valido();
+        destinatario.valido();
+        return mensajeRepo.getBetween(remitente.getId(), destinatario.getId());
     }
 
     @Override
     public boolean borrarChatConUsuario(Usuario remitente, Usuario destinatario) throws UsuarioException, MensajeException {
-        return false;
+        remitente.valido();
+        destinatario.valido();
+
+        mensajeRepo.deleteMessagesBetweenUsers(remitente.getId(), destinatario.getId());
+
+        return true;
     }
 }

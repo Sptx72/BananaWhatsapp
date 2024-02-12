@@ -1,26 +1,32 @@
 package com.banana.bananawhatsapp.controladores;
 
-import com.banana.bananawhatsapp.persistencia.IUsuarioRepository;
+import com.banana.bananawhatsapp.config.SpringConfig;
 import com.banana.bananawhatsapp.util.DBUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {SpringConfig.class})
 class ControladorMensajesTest {
 
+    @Autowired
     ControladorMensajes controladorMensajes;
-
-    IUsuarioRepository repoUser;
 
     @BeforeEach
     void cleanAndReloadData() {
         DBUtil.reloadDB();
     }
     @Test
-    void dadoRemitenteYDestinatarioYTextoValidos_cuandoEnviarMensaje_entoncesOK() {
+    @Transactional
+    void dadoRemitenteYDestinatarioYTextoValidos_cuandoEnviarMensaje_entoncesOK() throws Exception {
         Integer remitente = 1;
         Integer destinatario = 2;
         String texto = "Perfecto! Muchas gracias!";
@@ -39,7 +45,7 @@ class ControladorMensajesTest {
     }
 
     @Test
-    void dadoRemitenteYDestinatarioValidos_cuandoMostrarChat_entoncesOK() {
+    void dadoRemitenteYDestinatarioValidos_cuandoMostrarChat_entoncesOK() throws Exception {
         Integer remitente = 1;
         Integer destinatario = 2;
         boolean mostrarChat = controladorMensajes.mostrarChat(remitente, destinatario);

@@ -4,9 +4,7 @@ import com.banana.bananawhatsapp.exceptions.MensajeException;
 import lombok.*;
 
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
 
 @AllArgsConstructor
@@ -14,13 +12,19 @@ import java.time.LocalDate;
 @Setter
 @Getter
 @ToString
+@Entity
+@Table(name = "mensaje")
 public class Mensaje {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
+    @ManyToOne
+    @JoinColumn(name = "from_user")
     private Usuario remitente;
 
+    @ManyToOne
+    @JoinColumn(name = "to_user")
     private Usuario destinatario;
 
     private String cuerpo;

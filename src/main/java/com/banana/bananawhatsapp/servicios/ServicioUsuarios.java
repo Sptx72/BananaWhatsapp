@@ -12,8 +12,8 @@ import java.util.Set;
 @Service
 public class ServicioUsuarios implements IServicioUsuarios{
 
-     @Autowired
-    private IUsuarioRepository userRepo;
+    @Autowired
+    IUsuarioRepository userRepo;
     @Override
     public Usuario obtener(Integer id) throws UsuarioException {
         Usuario user = userRepo.findById(id).orElseThrow(() -> new RuntimeException());
@@ -21,25 +21,27 @@ public class ServicioUsuarios implements IServicioUsuarios{
     }
 
     @Override
-    @Transactional
     public Usuario crearUsuario(Usuario usuario) throws UsuarioException, SQLException {
-        userRepo.crear(usuario);
-        return null;
+        usuario.valido();
+        return userRepo.save(usuario);
     }
 
     @Override
     public boolean borrarUsuario(Usuario usuario) throws UsuarioException, SQLException {
-        userRepo.borrar(usuario);
-        return false;
+        usuario.valido();
+        userRepo.delete(usuario);
+        return userRepo.findById(usuario.getId()).isEmpty();
     }
 
     @Override
     public Usuario actualizarUsuario(Usuario usuario) throws UsuarioException {
-        return null;
+        usuario.valido();
+        return userRepo.save(usuario);
     }
 
     @Override
-    public Set<Usuario> obtenerPosiblesDesinatarios(Usuario usuario, int max) throws UsuarioException {
-        return null;
+    public Set<Usuario> obtenerPosiblesDesinatarios(Usuario usuario, int max) throws UsuarioException, SQLException {
+        usuario.valido();
+        return userRepo.obtenerPosiblesDestinatarios(usuario.getId(), max);
     }
 }

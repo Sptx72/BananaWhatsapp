@@ -1,11 +1,16 @@
 package com.banana.bananawhatsapp.servicios;
 
+import com.banana.bananawhatsapp.config.SpringConfig;
 import com.banana.bananawhatsapp.modelos.Mensaje;
 import com.banana.bananawhatsapp.modelos.Usuario;
 import com.banana.bananawhatsapp.persistencia.IUsuarioRepository;
 import com.banana.bananawhatsapp.util.DBUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 
@@ -13,8 +18,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {SpringConfig.class})
 class ServicioMensajeriaTest {
+
+    @Autowired
     IUsuarioRepository repoUsuario;
+
+    @Autowired
     IServicioMensajeria servicio;
 
     @BeforeEach
@@ -26,6 +37,10 @@ class ServicioMensajeriaTest {
     void dadoRemitenteYDestinatarioYTextoValido_cuandoEnviarMensaje_entoncesMensajeValido() throws Exception {
         Usuario remitente = repoUsuario.obtener(1);
         Usuario destinatario = repoUsuario.obtener(2);
+
+        remitente.valido();
+        destinatario.valido();
+
         String texto = "Felices Fiestas!";
         Mensaje message = servicio.enviarMensaje(remitente, destinatario, texto);
         assertThat(message.getId(), greaterThan(0));
@@ -35,10 +50,8 @@ class ServicioMensajeriaTest {
     void dadoRemitenteYDestinatarioYTextoNOValido_cuandoEnviarMensaje_entoncesExcepcion() throws Exception {
         Usuario remitente = repoUsuario.obtener(1);
         Usuario destinatario = repoUsuario.obtener(2);
-        String texto = "SMS < 10";
-        assertThrows(Exception.class, () -> {
-            servicio.enviarMensaje(remitente, destinatario, texto);
-        });
+        String texto = null;
+        assertThrows(Exception.class, () -> servicio.enviarMensaje(remitente, destinatario, texto));
     }
 
 
@@ -55,9 +68,7 @@ class ServicioMensajeriaTest {
     void dadoRemitenteYDestinatarioNOValido_cuandoMostrarChatConUsuario_entoncesExcepcion() throws Exception {
         Usuario remitente = repoUsuario.obtener(1);
         Usuario destinatario = new Usuario(2, null, null, null, false);
-        assertThrows(Exception.class, () -> {
-            List<Mensaje> userMessages = servicio.mostrarChatConUsuario(remitente, destinatario);
-        });
+        assertThrows(Exception.class, () -> servicio.mostrarChatConUsuario(remitente, destinatario));
     }
 
     @Test
@@ -72,8 +83,6 @@ class ServicioMensajeriaTest {
     void dadoRemitenteYDestinatarioNOValido_cuandoBorrarChatConUsuario_entoncesExcepcion() throws Exception {
         Usuario remitente = repoUsuario.obtener(1);
         Usuario destinatario = new Usuario(2, null, null, null, false);
-        assertThrows(Exception.class, () -> {
-            boolean borrarChat = servicio.borrarChatConUsuario(remitente, destinatario);
-        });
+        assertThrows(Exception.class, () -> servicio.borrarChatConUsuario(remitente, destinatario));
     }
 }

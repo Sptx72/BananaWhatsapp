@@ -1,10 +1,16 @@
 package com.banana.bananawhatsapp.servicios;
 
+import com.banana.bananawhatsapp.config.SpringConfig;
 import com.banana.bananawhatsapp.exceptions.UsuarioException;
 import com.banana.bananawhatsapp.modelos.Usuario;
 import com.banana.bananawhatsapp.util.DBUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -13,8 +19,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {SpringConfig.class})
+//@ActiveProfiles("prod")
 class ServicioUsuariosTest {
 
+    @Autowired
     IServicioUsuarios servicio;
 
     @BeforeEach
@@ -33,15 +43,13 @@ class ServicioUsuariosTest {
 
     @Test
     void dadoUnUsuarioNOValido_cuandoCrearUsuario_entoncesExcepcion() {
-        Usuario nuevo = new Usuario(null, "Ricardo", "r", LocalDate.now(), true);
-        assertThrows(UsuarioException.class, () -> {
-            servicio.crearUsuario(nuevo);
-        });
+        Usuario nuevo = new Usuario(null, null, null, null, false);
+        assertThrows(UsuarioException.class, () -> servicio.crearUsuario(nuevo));
     }
 
     @Test
-    void dadoUnUsuarioValido_cuandoBorrarUsuario_entoncesUsuarioValido() {
-        Usuario user = new Usuario(2, "Gema", "g@g.com", LocalDate.now(), true);
+    void dadoUnUsuarioValido_cuandoBorrarUsuario_entoncesUsuarioValido() throws Exception {
+        Usuario user = new Usuario(1, "Gema", "g@g.com", LocalDate.now(), true);
         boolean userDelete = servicio.borrarUsuario(user);
         assertThat(userDelete, is(true));
     }
@@ -49,9 +57,7 @@ class ServicioUsuariosTest {
     @Test
     void dadoUnUsuarioNOValido_cuandoBorrarUsuario_entoncesExcepcion() {
         Usuario user = new Usuario(-1, "John", "j@j.com", LocalDate.now(), false);
-        assertThrows(UsuarioException.class, () -> {
-            servicio.borrarUsuario(user);
-        });
+        assertThrows(UsuarioException.class, () -> servicio.borrarUsuario(user));
     }
 
     @Test
@@ -64,14 +70,12 @@ class ServicioUsuariosTest {
 
     @Test
     void dadoUnUsuarioNOValido_cuandoActualizarUsuario_entoncesExcepcion() {
-        Usuario user = new Usuario(1, "Juan", "j@j.com", LocalDate.now(), false);
-        assertThrows(UsuarioException.class, () -> {
-            servicio.actualizarUsuario(user);
-        });
+        Usuario user = new Usuario(-1, null, null, LocalDate.now(), false);
+        assertThrows(UsuarioException.class, () -> servicio.actualizarUsuario(user));
     }
 
     @Test
-    void dadoUnUsuarioValido_cuandoObtenerPosiblesDesinatarios_entoncesUsuariosValidos() {
+    void dadoUnUsuarioValido_cuandoObtenerPosiblesDesinatarios_entoncesUsuariosValidos() throws Exception {
         int numPosibles = 100;
         Usuario user = new Usuario(1, "Juan", "j@j.com", LocalDate.now(), true);
 
@@ -83,8 +87,6 @@ class ServicioUsuariosTest {
     void dadoUnUsuarioNOValido_cuandoObtenerPosiblesDesinatarios_entoncesExcepcion() {
         Usuario user = new Usuario(-1, null, null, null, true);
         int numPosibles = 100;
-        assertThrows(UsuarioException.class, () -> {
-            servicio.obtenerPosiblesDesinatarios(user, numPosibles);
-        });
+        assertThrows(UsuarioException.class, () -> servicio.obtenerPosiblesDesinatarios(user, numPosibles));
     }
 }
