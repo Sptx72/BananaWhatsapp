@@ -16,7 +16,7 @@ public class ServicioUsuarios implements IServicioUsuarios{
     IUsuarioRepository userRepo;
     @Override
     public Usuario obtener(Integer id) throws UsuarioException {
-        Usuario user = userRepo.findById(id).orElseThrow(() -> new RuntimeException());
+        Usuario user = userRepo.findById(id).orElseThrow(() -> new UsuarioException());
         return user;
     }
 
@@ -27,6 +27,7 @@ public class ServicioUsuarios implements IServicioUsuarios{
     }
 
     @Override
+    @Transactional
     public boolean borrarUsuario(Usuario usuario) throws UsuarioException, SQLException {
         usuario.valido();
         userRepo.delete(usuario);

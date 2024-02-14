@@ -3,7 +3,7 @@ package com.banana.bananawhatsapp.controladores;
 import com.banana.bananawhatsapp.config.SpringConfig;
 import com.banana.bananawhatsapp.exceptions.UsuarioException;
 import com.banana.bananawhatsapp.modelos.Usuario;
-import com.banana.bananawhatsapp.persistencia.IUsuarioRepository;
+import com.banana.bananawhatsapp.servicios.IServicioUsuarios;
 import com.banana.bananawhatsapp.util.DBUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class ControladorUsuariosTest {
     ControladorUsuarios controladorUsuarios;
 
     @Autowired
-    IUsuarioRepository repoUser;
+    IServicioUsuarios servicioUsuarios;
 
 
     @BeforeEach
@@ -55,12 +55,12 @@ class ControladorUsuariosTest {
     void dadoUsuarioValido_cuandoActualizar_entoncesUsuarioValido() throws Exception {
         Integer iDUser = 2;
         LocalDate fecha = LocalDate.parse("2023-12-17");
-        Usuario user = repoUser.obtener(iDUser);
+        Usuario user = servicioUsuarios.obtener(iDUser);
         user.setNombre("Juan Luis");
         user.setEmail("jl@jll.com");
         user.setAlta(fecha);
         controladorUsuarios.actualizar(user);
-        assertThat(repoUser.obtener(iDUser).getNombre(), is("Juan Luis"));
+        assertThat(servicioUsuarios.obtener(iDUser).getNombre(), is("Juan Luis"));
     }
 
     @Test
@@ -68,7 +68,7 @@ class ControladorUsuariosTest {
         assertThrows(UsuarioException.class, () -> {
             Integer iDUser = 3;
             LocalDate fecha = LocalDate.parse("2025-12-17");
-            Usuario user = repoUser.obtener(iDUser);
+            Usuario user = servicioUsuarios.obtener(iDUser);
             user.setNombre("Juan Luis");
             user.setEmail("jl@jll.com");
             user.setAlta(fecha);
@@ -78,7 +78,7 @@ class ControladorUsuariosTest {
 
     @Test
     void dadoUsuarioValido_cuandoBaja_entoncesUsuarioValido() throws Exception {
-        Usuario user = repoUser.obtener(1);
+        Usuario user = servicioUsuarios.obtener(1);
         boolean ok = controladorUsuarios.baja(user);
         assertThat(ok, is(true));
     }

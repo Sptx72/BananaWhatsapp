@@ -38,15 +38,16 @@ public class ServicioMensajeria implements IServicioMensajeria{
     public List<Mensaje> mostrarChatConUsuario(Usuario remitente, Usuario destinatario) throws UsuarioException, MensajeException, SQLException {
         remitente.valido();
         destinatario.valido();
-        return mensajeRepo.getBetween(remitente.getId(), destinatario.getId());
+        return mensajeRepo.findAllByRemitenteAndDestinatario(remitente, destinatario);
     }
 
     @Override
+    @Transactional
     public boolean borrarChatConUsuario(Usuario remitente, Usuario destinatario) throws UsuarioException, MensajeException {
         remitente.valido();
         destinatario.valido();
 
-        mensajeRepo.deleteMessagesBetweenUsers(remitente.getId(), destinatario.getId());
+        mensajeRepo.deleteAllByRemitenteAndDestinatario(remitente, destinatario);
 
         return true;
     }
